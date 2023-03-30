@@ -3,7 +3,6 @@ package main
 import (
 	"strings"
 	"fmt"
-	// "errors"
 )
 
 type Room struct {
@@ -66,7 +65,7 @@ func (room Room) isInRoom(item string) bool {
 	return false
 }
 
-func (room Room) delFromRoom(item string) {
+func (room *Room) delFromRoom(item string) {
 	for key, vals := range room.InRoom {
 		for index, val := range vals {
 			if val == item {
@@ -159,11 +158,10 @@ func (plr *Player) Take(item string) string {
 	return result
 }
 
-func (plr *Player) Apply(item string) string {
+func (plr *Player) Apply(data []string) string {
 	var result string
-	tmp := strings.Split(item, " ")
-	key := tmp[0]
-	whereToApply := tmp[1]
+	key := data[0]
+	whereToApply := data[1]
 	if contains(plr.Have, key) {
 		if key == "ключи" && whereToApply == "дверь" {
 			plr.DoorIsOpen = true
@@ -180,12 +178,57 @@ func (plr *Player) Apply(item string) string {
 var player Player
 
 func main() {
-	var a = ""
-	fmt.Println(a)
+	initGame()
+	fmt.Println(handleCommand("осмотреться"))
+	fmt.Println(handleCommand("идти коридор"))
+	fmt.Println(handleCommand("идти комната"))
+	fmt.Println(handleCommand("осмотреться"))
+	fmt.Println(handleCommand("надеть рюкза"))
+	fmt.Println(handleCommand("взять ключи"))
+	fmt.Println(handleCommand("взять конспекты"))
+	fmt.Println(handleCommand("идти коридор"))
+	fmt.Println(handleCommand("применить ключи дверь"))
+	fmt.Println(handleCommand("идти улица"))
+	
+	initGame()
+	fmt.Println(handleCommand("осмотреться"))
+	fmt.Println(handleCommand("завтракать"))
+	fmt.Println(handleCommand("идти комната"))
+	fmt.Println(handleCommand("идти коридор"))
+	fmt.Println(handleCommand("применить ключи дверь"))
+	fmt.Println(handleCommand("идти комната"))
+	fmt.Println(handleCommand("осмотреться"))
+	fmt.Println(handleCommand("взять ключи"))
+	fmt.Println(handleCommand("надеть рюкзак"))
+	fmt.Println(handleCommand("осмотреться"))
+	fmt.Println(handleCommand("взять ключи"))
+	fmt.Println(handleCommand("взять телефон"))
+	fmt.Println(handleCommand("взять ключи"))
+	fmt.Println(handleCommand("осмотреться"))
+	fmt.Println(handleCommand("взять конспекты"))
+	fmt.Println(handleCommand("осмотреться"))
+	fmt.Println(handleCommand("идти коридор"))
+	fmt.Println(handleCommand("идти кухня"))
+	fmt.Println(handleCommand("осмотреться"))
+	fmt.Println(handleCommand("идти коридор"))
+	fmt.Println(handleCommand("идти улица"))
+	fmt.Println(handleCommand("применить ключи дверь"))
+	fmt.Println(handleCommand("применить телефон шкаф"))
+	fmt.Println(handleCommand("применить ключи шкаф"))
+	fmt.Println(handleCommand("идти улица"))
 }
 
 func initGame() {
-	fmt.Println("Welcome to the Text Game!\nHere will be the game rules and commands!")
+	fmt.Printf(`
+	*****Welcome to the Text Game!*****
+
+	There is 5 kind of actions in our game:
+	---Glance(осмотреться) - to look through rooms---
+	---Move(идти) - to move another room---
+	---Wear(надеть) - to wear an item---
+	---Take(взять) - to load an item into a bag---
+	---Apply(применить) - to use an item---
+	`)
 
 	player = Player{
 		CurrentRoom: "кухня",
@@ -231,45 +274,21 @@ func initGame() {
 	}
 }
 
-func commandParser(command string) (string, string) {
-	var actionType string 
-	var data string
+func handleCommand(command string) string {
 	buffer := strings.Split(command, " ")
-
 	l := len(buffer)
 	switch {
 		case buffer[0] == "осмотреться" && l == 1:
-			actionType = "Glance"
+			return player.Glance()
 		case buffer[0] == "идти" && l == 2:
-			actionType = "Move"
-			data = buffer[1]
+			return player.Move(buffer[1])
 		case buffer[0] == "надеть" && l == 2:
-			actionType = "Wear"
-			data = buffer[1]
+			return player.Wear(buffer[1])
 		case buffer[0] == "взять" && l == 2:
-			actionType = "Take"
-			data = buffer[1]
+			return player.Take(buffer[1])
 		case buffer[0] == "применить" && l == 3:
-			actionType = "Apply"
-			data = buffer[1] + " " + buffer[2]
-	}
-
-	return actionType, data
-}
-
-func handleCommand(command string) string {
-	actType, data := commandParser(command)
-	if actType == "Glance" {
-		return player.Glance()
-	} else if actType == "Move" {
-		return player.Move(data)
-	} else if actType == "Wear" {
-		return player.Wear(data)
-	} else if actType == "Take" {
-		return player.Take(data)
-	} else if actType == "Apply" {
-		return player.Apply(data)
-	} else {
-		return "неизвестная команда"
+			return player.Apply([]string{buffer[1], buffer[2]})
+		default:
+			return "неизвестная команда"
 	}
 }
